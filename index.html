@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hymn Book</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1f6f78">
+<link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--bg:#f3f5f8;--card:#fff;--ink:#1e2a3a;--mut:#5d6b7c;--line:#d9dfe7;--acc:#1f6f78;--accink:#fff;--gold:#c99a2e}
+@media(prefers-color-scheme:dark){:root{--bg:#10161e;--card:#18212c;--ink:#e8edf3;--mut:#9aa8b8;--line:#2a3646;--acc:#5bb8c1;--accink:#08171a;--gold:#e0b64d}}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding-bottom:env(safe-area-inset-bottom)}
+header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:env(safe-area-inset-top) 12px 0}
+.bar{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:8px;padding:10px 0}
+h1{font:600 1.3rem Georgia,serif;margin:0;flex:1}
+.tabs{max-width:820px;margin:0 auto;display:flex;gap:4px}
+.tabs button{flex:1;border:0;background:none;color:var(--mut);font:600 .95rem inherit;padding:10px;border-bottom:3px solid transparent;cursor:pointer}
+.tabs button.on{color:var(--acc);border-color:var(--acc)}
+main{max-width:820px;margin:0 auto;padding:14px 12px 80px}
+button,input,select,textarea{font:inherit;color:inherit}
+.btn{background:var(--acc);color:var(--accink);border:0;border-radius:10px;padding:10px 16px;font-weight:600;cursor:pointer;min-height:44px}
+.btn.ghost{background:none;color:var(--ink);border:1px solid var(--line)}
+.btn.danger{background:none;color:#c0392b;border:1px solid #c0392b}
+input,select,textarea{width:100%;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-height:44px}
+textarea{min-height:240px;font-family:Georgia,serif;line-height:1.5}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.row>*{flex:1;min-width:120px}
+.item{display:flex;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:8px}
+.item .t{flex:1;text-align:left;background:none;border:0;padding:14px;cursor:pointer;min-width:0}
+.item b{display:block;font-weight:600}.item small{color:var(--mut)}
+.star{background:none;border:0;font-size:1.5rem;padding:10px 14px;cursor:pointer;color:var(--mut)}.star.on{color:var(--gold)}
+.chip{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:2px 10px;font-size:.8rem;color:var(--mut);margin:2px 4px 2px 0}
+.lyr{font:var(--fs,1.25rem)/1.7 Georgia,serif;white-space:pre-wrap;max-width:34em;margin:16px auto}
+.meta{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin:12px 0}
+.meta dt{color:var(--mut)}.meta dd{margin:0}
+.chords{font:.95rem/1.5 ui-monospace,Menlo,monospace;white-space:pre;overflow-x:auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0}
+.pair{display:grid;gap:12px}@media(min-width:700px){.pair{grid-template-columns:1fr 1fr}}
+.why{color:var(--mut);font-style:italic}
+dialog{border:1px solid var(--line);border-radius:14px;background:var(--bg);color:var(--ink);width:min(640px,94vw);max-height:92vh;padding:16px}
+dialog::backdrop{background:#0008}label{display:block;font-size:.85rem;color:var(--mut);margin-top:10px}
+.empty{text-align:center;color:var(--mut);padding:40px 10px}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;z-index:20}
+</style></head><body>
+<header><div class="bar"><h1 id="ttl">Hymn Book</h1><button class="btn ghost" id="more" aria-label="Backup and import">⋯</button></div>
+<div class="tabs"><button id="tabH" class="on">Hymn Book</button><button id="tabP">Pair Generator</button></div></header>
+<main id="app"></main>
+<dialog id="dlg"></dialog>
+<script>
+// ---- Seed data: titles/credits as printed in the PDF. Lyrics only included for public-domain hymns; others are added by the user. ----
+const AG=`Amazing grace! How sweet the sound!
+That saved a wretch like me!
+I once was lost, but now am found,
+Was blind, but now I see.
+
+‘Twas grace that taught my heart to fear,
+And grace my fears relieved;
+How precious did that grace appear
+The hour I first believed!
+
+Thro’ many dangers, toils, and snares,
+I have already come;
+‘Tis grace hath brought me safe thus far,
+And grace will lead me home.
+
+The Lord has promised good to me,
+His word my hope secures;
+He will my shield and portion be
+As long as life endures.
+
+Yes, when this flesh and heart shall fail,
+And mortal life shall cease;
+I shall possess, within the veil,
+A life of joy and peace.
+
+The earth shall soon dissolve like snow,
+The sun forbear to shine;
+But God, who called me here below,
+Will be forever mine.
+
+When we’ve been there ten thousand years,
+Bright shining as the sun,
+We’ve no less days to sing God’s praise
+Than when we’d first begun.`;
+const CB=`When upon life’s billows you are tempest tossed,
+When you are discouraged, thinking all is lost,
+Count your many blessings, name them one by one,
+And it will surprise you what the Lord hath done.
+
+CHORUS
+Count your blessings, name them one by one,
+Count your blessings, see what God hath done!
+Count your blessings, name them one by one,
+And it will surprise you what the Lord hath done.
+
+Are you ever burdened with a load of care?
+Does the cross seem heavy you are called to bear?
+Count your many blessings, every doubt will fly,
+And you will keep singing as the days go by.
+
+When you look at others with their lands and gold,
+Think that Christ has promised you His wealth untold;
+Count your many blessings. Wealth can never buy
+Your reward in heaven, nor your home on high.
+
+So, amid the conflict whether great or small,
+Do not be disheartened, God is over all;
+Count your many blessings, angels will attend,
+Help and comfort give you to your journey’s end.`;
+// [title, credit, themes, lyrics, extra]
+const SEED=[
+["10,000 Reasons (Bless the Lord)","Matt Redman",["praise","thanksgiving"]],
+["Above All","Michael Smith (as printed)",["cross","praise"]],
+["Amazing Grace","",["grace","hope"],AG],
+["A New Commandment","",["love","service"]],
+["As the Deer","Martin J. Nystrom",["longing","worship"]],
+["Ave Maria (As I Kneel)","",["surrender","peace"]],
+["Come On And Celebrate","",["joy","praise"]],
+["Count Your Blessings","",["thanksgiving","trust"],CB],
+["Enter His Gates","",["thanksgiving","joy"]],
+["Every Praise Is To Our God","",["praise"]],
+["Give Me Oil In My Lamp","",["service","longing"]],
+["Give Thanks","Don Moen",["thanksgiving"]],
+["God Will Take Care Of You","",["trust","peace"]],
+["Goodness of God","",["thanksgiving","trust"]],
+["Here I Am To Worship","",["worship","cross"]],
+["I Will Sing Of The Mercies","",["praise","trust"]],
+["In His Time","",["trust","hope"]],
+["In Moments Like This","",["worship","love"]],
+["Jesus Is The Joy Of Living","Alfred H. Ackley",["joy","surrender"]],
+["Jesus What A Wonder You Are / Jesus How Lovely You Are","",["worship","love"]],
+["Just Like A Child","Odette Vercruysse",["trust","surrender"]],
+["Lord I Offer My Life To You","Hillsong (as printed)",["surrender"]],
+["Lord I Lift Your Name On High","",["cross","praise"]],
+["Love It Was That Made Us (God Is Love)","Author and composer unknown",["love","service"],"",{key:"G",time:"3/4",style:"Waltz"}],
+["Make Me A Servant","Kelly Willard",["service","surrender"]],
+["Make Me An Instrument","St. Francis of Assisi (as printed)",["service","peace"]],
+["Our God Is An Awesome God","",["praise","worship"]],
+["Open The Eyes Of My Heart","Michael W. Smith",["longing","worship"]],
+["Shepherd Of My Soul","",["trust","surrender"]],
+["Shout To The Lord","",["praise","joy"]],
+["Sing Life, Sing Love, Sing Jesus","",["love","joy"]],
+["Thank You Lord","",["thanksgiving"]],
+["The Power Of Your Love","Hillsong Worship; songwriter Geoff Bullock",["longing","love"]],
+["The Lord Is My Shepherd","",["trust","peace"]],
+["You Are My All In All (page 36 has no printed title)","",["surrender","cross"]],
+["What A Beautiful Name","",["name","cross","praise"]]
+];
+const COMP={surrender:["praise","joy","thanksgiving"],trust:["thanksgiving","joy","praise"],cross:["praise","thanksgiving","joy"],longing:["joy","praise","trust"],grace:["thanksgiving","service"],service:["surrender","love","worship"],love:["service","cross","worship"],peace:["joy","praise"],praise:["trust","cross","surrender","longing"],joy:["trust","longing","surrender"],thanksgiving:["trust","cross","grace"],name:["cross","trust","surrender"],hope:["praise","thanksgiving"],worship:["cross","service","surrender"]};
+const KEY="hymnbook.v1";
+let songs=[],ui={tab:"H",sort:"az",q:"",favOnly:false,view:null,mode:"lyr",fs:1.25,gen:{match:["smart"],pair:null}};
+const $=s=>document.querySelector(s),uid=()=>Math.random().toString(36).slice(2,10);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function load(){try{songs=JSON.parse(localStorage.getItem(KEY)||"null")}catch(e){songs=null}
+ if(!Array.isArray(songs)){songs=SEED.map(s=>({id:uid(),title:s[0],author:s[1]||"",themes:s[2]||[],lyrics:s[3]||"",lang:"English",fav:false,suggestedThemes:true,...(s[4]||{})}));save()}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(songs))}catch(e){toast("Could not save (storage full?)")}}
+function toast(m){const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),2200)}
+const byId=id=>songs.find(s=>s.id===id);
+const sortKey=t=>t.toLowerCase().replace(/^(the|a|an)\s+/,"").replace(/[^a-z0-9 ]/g,"");
+function render(){$("#tabH").className=ui.tab==="H"?"on":"";$("#tabP").className=ui.tab==="P"?"on":"";
+ $("#ttl").textContent=ui.view?"":"Hymn Book";
+ if(ui.view)return renderSong();ui.tab==="H"?renderList():renderGen()}
+function renderList(){let l=songs.filter(s=>(!ui.favOnly||s.fav)&&(s.title+" "+s.lyrics+" "+(s.author||"")).toLowerCase().includes(ui.q.toLowerCase()));
+ l.sort((a,b)=>ui.sort==="fav"?(b.fav-a.fav||sortKey(a.title).localeCompare(sortKey(b.title))):ui.sort==="za"?sortKey(b.title).localeCompare(sortKey(a.title)):sortKey(a.title).localeCompare(sortKey(b.title)));
+ $("#app").innerHTML=`<input id="q" type="search" placeholder="Search titles or lyrics" value="${esc(ui.q)}">
+ <div class="row"><select id="sort"><option value="az">A → Z</option><option value="za">Z → A</option><option value="fav">Favourites first</option></select>
+ <button class="btn ghost" id="fo">${ui.favOnly?"★ Showing favourites":"☆ Favourites only"}</button><button class="btn" id="add">+ Add song</button></div>
+ <div>${l.map(s=>`<div class="item"><button class="t" data-o="${s.id}"><b>${esc(s.title)}</b><small>${esc(s.author||"")}${s.lyrics.trim()?"":" · lyrics needed"}</small></button><button class="star ${s.fav?"on":""}" data-f="${s.id}" aria-label="Favourite">${s.fav?"★":"☆"}</button></div>`).join("")||'<div class="empty">No songs found.</div>'}</div>
+ <p class="empty">${songs.length} songs</p>`;
+ $("#sort").value=ui.sort;
+ $("#q").oninput=e=>{ui.q=e.target.value;const p=e.target.selectionStart;renderList();const q=$("#q");q.focus();q.setSelectionRange(p,p)};
+ $("#sort").onchange=e=>{ui.sort=e.target.value;renderList()};$("#fo").onclick=()=>{ui.favOnly=!ui.favOnly;renderList()};$("#add").onclick=()=>edit();
+ document.querySelectorAll("[data-o]").forEach(b=>b.onclick=()=>{ui.view=b.dataset.o;scrollTo(0,0);render()});
+ document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{const s=byId(b.dataset.f);s.fav=!s.fav;save();renderList()})}
+function meta(s){const r=[["Key",s.key],["BPM",s.bpm],["Time signature",s.time],["Style / genre",s.style],["Tempo",s.tempo],["Language",s.lang],["Themes",(s.themes||[]).join(", ")],["Credit",s.author]].filter(x=>x[1]);
+ return r.length?`<dl class="meta">${r.map(x=>`<dt>${x[0]}</dt><dd>${esc(x[1])}</dd>`).join("")}</dl>`:""}
+function renderSong(){const s=byId(ui.view);if(!s){ui.view=null;return render()}
+ $("#app").innerHTML=`<div class="row"><button class="btn ghost" id="bk">← Back</button><button class="btn ghost" id="fv">${s.fav?"★ Favourite":"☆ Favourite"}</button><button class="btn ghost" id="ed">Edit</button></div>
+ <h2 style="font:600 1.5rem Georgia,serif;margin:8px 0">${esc(s.title)}</h2>${s.author?`<div style="color:var(--mut)">${esc(s.author)}</div>`:""}
+ <div class="row"><button class="btn ${ui.mode==="lyr"?"":"ghost"}" id="m1">Lyrics</button><button class="btn ${ui.mode==="mus"?"":"ghost"}" id="m2">Musician</button>
+ <button class="btn ghost" id="sm">A−</button><button class="btn ghost" id="lg">A+</button></div>
+ ${ui.mode==="mus"?meta(s)+(s.chords?`<div class="card"><b>Chords</b><div class="chords">${esc(s.chords)}</div></div>`:"")+(s.notes?`<div class="card"><b>Notes</b><br>${esc(s.notes)}</div>`:"")+(!meta(s)&&!s.chords?'<p class="empty">No musical details yet. Tap Edit to add them.</p>':""):""}
+ ${s.lyrics.trim()?`<div class="lyr" style="--fs:${ui.fs}rem">${esc(s.lyrics)}</div>`:'<div class="card empty">No lyrics saved yet.<br><br><button class="btn" id="ed2">Add lyrics</button></div>'}`;
+ $("#bk").onclick=()=>{ui.view=null;render()};$("#fv").onclick=()=>{s.fav=!s.fav;save();renderSong()};$("#ed").onclick=()=>edit(s);if($("#ed2"))$("#ed2").onclick=()=>edit(s);
+ $("#m1").onclick=()=>{ui.mode="lyr";renderSong()};$("#m2").onclick=()=>{ui.mode="mus";renderSong()};
+ $("#sm").onclick=()=>{ui.fs=Math.max(.9,ui.fs-.15);renderSong()};$("#lg").onclick=()=>{ui.fs=Math.min(3,ui.fs+.15);renderSong()}}
+function edit(s){const n=!s;s=s||{};const d=$("#dlg");const f=(k,l,p="")=>`<label>${l}<input data-k="${k}" value="${esc(Array.isArray(s[k])?s[k].join(", "):s[k]||"")}" placeholder="${p}"></label>`;
+ d.innerHTML=`<h2 style="margin-top:0">${n?"Add song":"Edit song"}</h2>
+ <label>Title (required)<input data-k="title" value="${esc(s.title||"")}"></label>
+ <label>Lyrics (required)<textarea data-k="lyrics">${esc(s.lyrics||"")}</textarea></label>
+ <details ${n?"":"open"}><summary style="margin-top:12px;cursor:pointer">Optional details</summary>
+ ${f("author","Credit / writer")}${f("lang","Language")}<div class="row">${f("key","Key","e.g. G")}${f("bpm","BPM","e.g. 72")}${f("time","Time signature","e.g. 4/4")}</div>
+ ${f("style","Style / genre")}${f("tempo","Tempo (slow, medium, fast)")}${f("themes","Themes (comma separated)","e.g. trust, praise")}
+ <label>Chords<textarea data-k="chords" style="min-height:100px;font-family:ui-monospace,monospace">${esc(s.chords||"")}</textarea></label>${f("notes","Notes")}</details>
+ <div class="row" style="margin-top:16px"><button class="btn" id="sv">Save</button><button class="btn ghost" id="cn">Cancel</button>${n?"":'<button class="btn danger" id="dl">Delete</button>'}</div>`;
+ d.showModal();$("#cn").onclick=()=>d.close();
+ $("#sv").onclick=()=>{const v={};d.querySelectorAll("[data-k]").forEach(e=>v[e.dataset.k]=e.value.trim());
+  if(!v.title||!v.lyrics){toast("Title and lyrics are required");return}
+  v.themes=(v.themes||"").split(",").map(x=>x.trim().toLowerCase()).filter(Boolean);delete v.suggestedThemes;
+  if(n){songs.push({id:uid(),fav:false,...v})}else Object.assign(s,v,{suggestedThemes:false});
+  save();d.close();render();toast("Saved")};
+ if(!n)$("#dl").onclick=()=>{if(confirm("Delete “"+s.title+"”? This cannot be undone.")){songs=songs.filter(x=>x.id!==s.id);save();d.close();ui.view=null;render()}}}
+// ---- Pair generator ----
+const MODES=[["smart","Smart (meaning)"],["theme","Theme"],["style","Style"],["tempo","Tempo"],["bpm","BPM"],["key","Key"]];
+function renderGen(){const g=ui.gen;
+ $("#app").innerHTML=`<div class="card"><b>How should the two hymns relate?</b><div class="row">${MODES.map(m=>`<label style="display:flex;gap:8px;align-items:center;margin:0"><input type="checkbox" style="width:22px;min-height:22px" data-m="${m[0]}" ${g.match.includes(m[0])?"checked":""}>${m[1]}</label>`).join("")}</div>
+ <p class="why" style="margin:6px 0">Smart picks hymns whose meanings complement each other (e.g. trust followed by thanksgiving). Style, tempo, BPM and key only match when both songs have that detail filled in.</p>
+ <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" style="width:22px;min-height:22px" id="onlyl" ${g.onlyLyrics!==false?"checked":""}>Only songs that have lyrics saved</label>
+ <button class="btn" id="go" style="margin-top:12px;width:100%">Generate pair</button></div>
+ <div id="out">${g.pair?pairHtml(g.pair):""}</div>`;
+ document.querySelectorAll("[data-m]").forEach(c=>c.onchange=()=>{const v=c.dataset.m;
+  g.match=g.match.filter(x=>x!==v);if(c.checked){if(v==="smart")g.match=["smart"];else g.match=g.match.filter(x=>x!=="smart").concat(v)}if(!g.match.length)g.match=["smart"];renderGen()});
+ $("#onlyl").onchange=e=>g.onlyLyrics=e.target.checked;
+ $("#go").onclick=()=>{g.onlyLyrics=$("#onlyl").checked;g.pair=gen();renderGen();if(!g.pair)toast("No pair found")};
+ document.querySelectorAll("[data-o]").forEach(b=>b.onclick=()=>{ui.view=b.dataset.o;ui.tab="H";render()})}
+function pairHtml(p){return`<div class="pair">${p.songs.map(s=>`<div class="card"><b style="font:600 1.15rem Georgia,serif">${esc(s.title)}</b><div>${(s.themes||[]).map(t=>`<span class="chip">${esc(t)}</span>`).join("")}${s.key?`<span class="chip">Key ${esc(s.key)}</span>`:""}${s.bpm?`<span class="chip">${esc(s.bpm)} BPM</span>`:""}</div><div class="row"><button class="btn ghost" data-o="${s.id}">Open</button></div></div>`).join("")}</div><p class="why">${esc(p.why)}</p>`}
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+function relation(a,b,modes){const why=[],th=(s)=>s.themes||[];let ok=true;
+ const comp=(()=>{for(const x of th(a))for(const y of th(b))if(x!==y&&((COMP[x]||[]).includes(y)||(COMP[y]||[]).includes(x)))return[x,y]})();
+ const shared=th(a).find(x=>th(b).includes(x));
+ for(const m of modes){
+  if(m==="smart"){if(comp){why.push(`Meanings complement each other: “${comp[0]}” and “${comp[1]}”.`)}else ok=false}
+  else if(m==="theme"){if(shared)why.push(`Shared theme: ${shared}.`);else ok=false}
+  else if(m==="style"||m==="tempo"||m==="key"){const x=(a[m]||"").toLowerCase(),y=(b[m]||"").toLowerCase();if(x&&x===y)why.push(`Same ${m}: ${a[m]}.`);else ok=false}
+  else if(m==="bpm"){const x=+a.bpm,y=+b.bpm;if(x&&y&&Math.abs(x-y)<=10)why.push(`Close tempo: ${x} and ${y} BPM.`);else ok=false}}
+ return ok?why.join(" "):null}
+function gen(){const g=ui.gen;let pool=songs.filter(s=>g.onlyLyrics===false||s.lyrics.trim());const modes=g.match;
+ const cands=[];for(let i=0;i<pool.length;i++)for(let j=i+1;j<pool.length;j++){const w=relation(pool[i],pool[j],modes);if(w)cands.push({songs:[pool[i],pool[j]],why:w})}
+ if(!cands.length){toast("Not enough details to match. Add themes, keys or BPM to your songs.");return null}
+ const p=rnd(cands);if(Math.random()<.5)p.songs.reverse();return p}
+// ---- Backup / import ----
+$("#more").onclick=()=>{const d=$("#dlg");d.innerHTML=`<h2 style="margin-top:0">Backup & import</h2><div class="row"><button class="btn" id="ex">Export backup (JSON)</button><label class="btn ghost" style="margin:0;text-align:center;cursor:pointer">Import backup<input id="im" type="file" accept=".json" hidden></label></div>
+ <p class="why">To add many lyrics at once, paste text below. Start each song with a line “### Title”. Songs with an existing title get their lyrics updated.</p><textarea id="bulk" placeholder="### Song title&#10;lyrics…"></textarea><div class="row"><button class="btn" id="bi">Import pasted text</button><button class="btn ghost" id="cl">Close</button></div>`;
+ d.showModal();$("#cl").onclick=()=>d.close();
+ $("#ex").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(songs,null,1)],{type:"application/json"}));a.download="hymnbook-backup.json";a.click()};
+ $("#im").onchange=e=>{const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!Array.isArray(x))throw 0;if(confirm("Replace all songs with this backup?")){songs=x;save();d.close();render()}}catch(_){toast("Not a valid backup")}};r.readAsText(e.target.files[0])};
+ $("#bi").onclick=()=>{const parts=$("#bulk").value.split(/^###\s*/m).filter(x=>x.trim());let n=0;
+  for(const p of parts){const i=p.indexOf("\n"),t=(i<0?p:p.slice(0,i)).trim(),l=(i<0?"":p.slice(i+1)).trim();if(!t)continue;
+   const ex=songs.find(s=>s.title.toLowerCase()===t.toLowerCase());if(ex)ex.lyrics=l||ex.lyrics;else songs.push({id:uid(),title:t,lyrics:l,author:"",themes:[],fav:false,lang:"English"});n++}
+  save();d.close();render();toast(n+" song(s) imported")}};
+$("#tabH").onclick=()=>{ui.tab="H";ui.view=null;render()};$("#tabP").onclick=()=>{ui.tab="P";ui.view=null;render()};
+load();render();
+if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
+</script></body></html>
